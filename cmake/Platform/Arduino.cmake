@@ -807,6 +807,7 @@ function(REGISTER_HARDWARE_PLATFORM PLATFORM_PATH)
             if (${PLATFORM}_CORES_PATH)
                 file(GLOB sub-dir ${${PLATFORM}_CORES_PATH}/*)
                 foreach (dir ${sub-dir})
+#                      message("Core: ${dir}") 
                     if (IS_DIRECTORY ${dir})
                         get_filename_component(core ${dir} NAME)
                         set(CORES ${CORES} ${core} CACHE INTERNAL "A list of registered cores")
@@ -1122,6 +1123,9 @@ function(setup_arduino_core VAR_NAME BOARD_ID)
     if (BOARD_CORE)
         if (NOT TARGET ${CORE_LIB_NAME})
             set(BOARD_CORE_PATH ${${BOARD_CORE}.path})
+				message("Board id: ${BOARD_ID}")
+				message("Board core: ${BOARD_CORE}")
+				message("Board core path: ${BOARD_CORE_PATH}")
             find_sources(CORE_SRCS ${BOARD_CORE_PATH} True)
             # Debian/Ubuntu fix
             list(REMOVE_ITEM CORE_SRCS "${BOARD_CORE_PATH}/main.cxx")
@@ -1159,7 +1163,11 @@ set(Wire_RECURSE True)
 set(Ethernet_RECURSE True)
 set(SD_RECURSE True)
 
+set(recursion_default TRUE)
+
 function(setup_arduino_library VAR_NAME BOARD_ID LIB_PATH COMPILE_FLAGS LINK_FLAGS)
+
+# 	message("Setting up arduino library ${VAR_NAME} ${LIB_PATH}")
 
     string(REGEX REPLACE "/src/?$" "" LIB_PATH_STRIPPED ${LIB_PATH})
     get_filename_component(LIB_NAME ${LIB_PATH_STRIPPED} NAME)
@@ -1170,7 +1178,7 @@ function(setup_arduino_library VAR_NAME BOARD_ID LIB_PATH COMPILE_FLAGS LINK_FLA
 
         # Detect if recursion is needed
         if (NOT DEFINED ${LIB_SHORT_NAME}_RECURSE)
-            set(${LIB_SHORT_NAME}_RECURSE False)
+            set(${LIB_SHORT_NAME}_RECURSE ${recursion_default})
         endif ()
 
         find_sources(LIB_SRCS ${LIB_PATH} ${${LIB_SHORT_NAME}_RECURSE})
@@ -1191,18 +1199,23 @@ function(setup_arduino_library VAR_NAME BOARD_ID LIB_PATH COMPILE_FLAGS LINK_FLA
             endforeach ()
 
             if (LIB_INCLUDES)
-                string(REPLACE ";" " " LIB_INCLUDES "${LIB_INCLUDES}")
+                string(REPLACE ";" " " LIB_INCLUDES_tmp "${LIB_INCLUDES}")
             endif ()
 
             set_target_properties(${TARGET_LIB_NAME} PROPERTIES
-                    COMPILE_FLAGS "${ARDUINO_COMPILE_FLAGS} ${LIB_INCLUDES} -I\"${LIB_PATH}\" -I\"${LIB_PATH}/utility\" ${COMPILE_FLAGS}"
+                    COMPILE_FLAGS "${ARDUINO_COMPILE_FLAGS} ${LIB_INCLUDES_tmp} -I\"${LIB_PATH}\" -I\"${LIB_PATH}/utility\" ${COMPILE_FLAGS}"
                     LINK_FLAGS "${ARDUINO_LINK_FLAGS} ${LINK_FLAGS}")
-            list(APPEND LIB_INCLUDES "-I\"${LIB_PATH}\" -I\"${LIB_PATH}/utility\"")
+            list(APPEND LIB_INCLUDES "-I\"${LIB_PATH}\";-I\"${LIB_PATH}/utility\"")
 
             if (LIB_TARGETS)
                 list(REMOVE_ITEM LIB_TARGETS ${TARGET_LIB_NAME})
             endif ()
-            target_link_libraries(${TARGET_LIB_NAME} ${BOARD_ID}_CORE ${LIB_TARGETS})
+            
+            if(TARGET ${BOARD_ID}_CORE)
+               target_link_libraries(${TARGET_LIB_NAME} ${BOARD_ID}_CORE)
+            endif()
+            
+            target_link_libraries(${TARGET_LIB_NAME}  ${LIB_TARGETS})
             list(APPEND LIB_TARGETS ${TARGET_LIB_NAME})
 
         endif ()
@@ -1213,6 +1226,15 @@ function(setup_arduino_library VAR_NAME BOARD_ID LIB_PATH COMPILE_FLAGS LINK_FLA
     if (LIB_TARGETS)
         list(REMOVE_DUPLICATES LIB_TARGETS)
     endif ()
+if (LIB_INCLUDES)
+          list(REMOVE_DUPLICATES LIB_INCLUDES)
+      endif ()
+#message("")
+#message("")
+#message("")
+#message("")
+#     message("LIB_TARGETS: ${LIB_TARGETS}")
+# 	message("LIB_INCLUDES: ${LIB_INCLUDES}")
     set(${VAR_NAME} ${LIB_TARGETS} PARENT_SCOPE)
     set(${VAR_NAME}_INCLUDES ${LIB_INCLUDES} PARENT_SCOPE)
 endfunction()
@@ -2017,6 +2039,8 @@ function(find_arduino_libraries VAR_NAME SRCS ARDLIBS)
 
         foreach (SRC ${SRCS})
 
+#  	message("Checking ${SRC}")
+
             # Skipping generated files. They are, probably, not exist yet.
             # TODO: Maybe it's possible to skip only really nonexisting files,
             # but then it wiil be less deterministic.
@@ -2269,6 +2293,7 @@ function(get_arduino_flags COMPILE_FLAGS_VAR LINK_FLAGS_VAR BOARD_ID MANUAL)
             else ()
                 set(ARDUINO_VERSION_DEFINE "${ARDUINO_VERSION_DEFINE}0${CMAKE_MATCH_2}")
             endif ()
+            set(ARDUINO_VERSION_DEFINE "${ARDUINO_VERSION_DEFINE}00")
         else ()
             message("Invalid Arduino SDK Version (${ARDUINO_SDK_VERSION})")
         endif ()
