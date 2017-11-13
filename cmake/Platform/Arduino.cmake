@@ -2100,9 +2100,29 @@ function(find_arduino_libraries VAR_NAME SRCS ARDLIBS)
     if (ARDUINO_LIBS)
         list(REMOVE_DUPLICATES ARDUINO_LIBS)
     endif ()
+    
+    remove_blacklisted_arduino_libs(ARDUINO_LIBS)
+    
     set(${VAR_NAME} ${ARDUINO_LIBS} PARENT_SCOPE)
 endfunction()
 
+function(remove_blacklisted_arduino_libs
+   arduino_libs_var_
+)
+   set(old_libs "${${arduino_libs_var_}}")
+   set(new_libs)
+   foreach(lib ${old_libs})
+      list (FIND BLACKLISTED_ARDUINO_LIBS "${lib}" _index)
+      if(NOT ${_index} GREATER -1)
+         message("Using library ${lib}")
+         list(APPEND new_libs "${lib}")
+      else()
+         message("Suppressing library ${lib}")
+      endif()
+   endforeach()
+
+   set("${arduino_libs_var_}" "${new_libs}" PARENT_SCOPE)
+endfunction()
 #=============================================================================#
 # find_sources
 # [PRIVATE/INTERNAL]
