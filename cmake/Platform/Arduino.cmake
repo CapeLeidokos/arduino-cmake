@@ -1159,9 +1159,10 @@ set(Wire_RECURSE True)
 set(Ethernet_RECURSE True)
 set(SD_RECURSE True)
 
-set(recursion_default TRUE)
-
 function(setup_arduino_library VAR_NAME BOARD_ID LIB_PATH COMPILE_FLAGS LINK_FLAGS)
+
+    set(ARDUINO_CMAKE_RECURSION_DEFAULT FALSE CACHE BOOL 
+"The default recursion behavior during library setup")
 
     string(REGEX REPLACE "/src/?$" "" LIB_PATH_STRIPPED ${LIB_PATH})
     get_filename_component(LIB_NAME ${LIB_PATH_STRIPPED} NAME)
@@ -1172,7 +1173,7 @@ function(setup_arduino_library VAR_NAME BOARD_ID LIB_PATH COMPILE_FLAGS LINK_FLA
 
         # Detect if recursion is needed
         if (NOT DEFINED ${LIB_SHORT_NAME}_RECURSE)
-            set(${LIB_SHORT_NAME}_RECURSE ${recursion_default})
+            set(${LIB_SHORT_NAME}_RECURSE ${ARDUINO_CMAKE_RECURSION_DEFAULT})
         endif ()
 
         find_sources(LIB_SRCS ${LIB_PATH} ${${LIB_SHORT_NAME}_RECURSE})
@@ -1204,12 +1205,8 @@ function(setup_arduino_library VAR_NAME BOARD_ID LIB_PATH COMPILE_FLAGS LINK_FLA
             if (LIB_TARGETS)
                 list(REMOVE_ITEM LIB_TARGETS ${TARGET_LIB_NAME})
             endif ()
+            target_link_libraries(${TARGET_LIB_NAME} ${BOARD_ID}_CORE ${LIB_TARGETS})
             
-            if(TARGET ${BOARD_ID}_CORE)
-               target_link_libraries(${TARGET_LIB_NAME} ${BOARD_ID}_CORE)
-            endif()
-            
-            target_link_libraries(${TARGET_LIB_NAME}  ${LIB_TARGETS})
             list(APPEND LIB_TARGETS ${TARGET_LIB_NAME})
 
         endif ()
@@ -2027,8 +2024,6 @@ function(find_arduino_libraries VAR_NAME SRCS ARDLIBS)
 
         foreach (SRC ${SRCS})
 
-#  	message("Checking ${SRC}")
-
             # Skipping generated files. They are, probably, not exist yet.
             # TODO: Maybe it's possible to skip only really nonexisting files,
             # but then it wiil be less deterministic.
@@ -2097,15 +2092,18 @@ endfunction()
 function(remove_blacklisted_arduino_libs
    arduino_libs_var_
 )
+   set(ARDUINO_CMAKE_BLACKLISTED_ARDUINO_LIBS "" CACHE STRING
+"A list of absolute paths to Arduino libraries that are meant to be ignored \
+during library search")
+
    set(old_libs "${${arduino_libs_var_}}")
    set(new_libs)
    foreach(lib ${old_libs})
-      list (FIND BLACKLISTED_ARDUINO_LIBS "${lib}" _index)
+      list (FIND ARDUINO_CMAKE_BLACKLISTED_ARDUINO_LIBS "${lib}" _index)
       if(NOT ${_index} GREATER -1)
-         message("Using library ${lib}")
          list(APPEND new_libs "${lib}")
       else()
-         message("Suppressing library ${lib}")
+         ARDUINO_DEBUG_MSG("Suppressing blacklisted library ${lib}")
       endif()
    endforeach()
 
