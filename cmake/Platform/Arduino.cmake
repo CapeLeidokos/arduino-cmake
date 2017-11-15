@@ -276,6 +276,14 @@
 #
 # ARDUINO_FOUND       - Set to True when the Arduino SDK is detected and configured.
 # ARDUINO_SDK_VERSION - Set to the version of the detected Arduino SDK (ex: 1.0)
+#
+# ARDUINO_CMAKE_RECURSION_DEFAULT
+#                            - Set the default recursion behavior during library 
+#                              search (default is FALSE)
+# ARDUINO_CMAKE_BLACKLISTED_ARDUINO_LIBS
+#                            - Specify a list of absolute paths to 
+#                              Arduino libraries that are supposed to 
+#                              ignored during library search.
 
 #=============================================================================#
 # Author: Tomasz Bogdal (QueezyTheGreat)
