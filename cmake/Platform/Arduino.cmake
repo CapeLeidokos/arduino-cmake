@@ -767,7 +767,7 @@ function(REGISTER_HARDWARE_PLATFORM PLATFORM_PATH)
     GET_FILENAME_COMPONENT(BASE_PATH ${PLATFORM_PATH} PATH)
     
     # The legacy default behavior is to assume avr as architecture
-    regiser_hardware_platform_bva("${BASE_PATH}" "${VENDOR_ID}" "avr")
+    register_hardware_platform_bva("${BASE_PATH}" "${VENDOR_ID}" "avr")
 
 endfunction()
 
