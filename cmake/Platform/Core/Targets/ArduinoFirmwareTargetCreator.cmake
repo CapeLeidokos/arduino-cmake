@@ -51,6 +51,8 @@ function(create_arduino_firmware_target TARGET_NAME BOARD_ID ALL_SRCS ALL_LIBS
       else()
          target_link_libraries(${TARGET_NAME} PUBLIC "-Wl,--whole-archive" ${ALL_LIBS} "-Wl,--no-whole-archive")
       endif()
+      
+      add_dependencies(${TARGET_NAME} ${ALL_LIBS})
     else()
       target_link_libraries(${TARGET_NAME} ${ALL_LIBS} "-lc -lm")
     endif()
