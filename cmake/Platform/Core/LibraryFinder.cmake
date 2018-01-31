@@ -139,7 +139,7 @@ function(find_arduino_libraries VAR_NAME SRCS ARDLIBS)
 
     endif ()
     
-    arduino_debug_msg("Arduino libraries: ${LIB_DEP}")
+    arduino_debug_msg("Arduino libraries: ${ARDUINO_LIBS}")
 
     if (ARDUINO_LIBS)
         list(REMOVE_DUPLICATES ARDUINO_LIBS)

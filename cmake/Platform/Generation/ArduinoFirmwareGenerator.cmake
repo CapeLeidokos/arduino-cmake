@@ -57,6 +57,7 @@ function(GENERATE_ARDUINO_FIRMWARE INPUT_NAME)
     VALIDATE_VARIABLES_NOT_EMPTY(VARS ALL_SRCS MSG "must define SRCS or SKETCH for target ${INPUT_NAME}")
 
     find_arduino_libraries(TARGET_LIBS "${ALL_SRCS}" "${INPUT_ARDLIBS}")
+    arduino_debug_msg("TARGET_LIBS: ${TARGET_LIBS}")
     foreach (LIB_DEP ${TARGET_LIBS})
         arduino_debug_msg("Arduino Library: ${LIB_DEP}")
         set(LIB_DEP_INCLUDES "${LIB_DEP_INCLUDES} -I\"${LIB_DEP}\"")
