@@ -138,12 +138,17 @@ function(find_arduino_libraries VAR_NAME SRCS ARDLIBS)
         endforeach ()
 
     endif ()
+    
+    arduino_debug_msg("Arduino libraries: ${LIB_DEP}")
 
     if (ARDUINO_LIBS)
         list(REMOVE_DUPLICATES ARDUINO_LIBS)
     endif ()
 
     _REMOVE_BLACKLISTED_LIBRARIES("${ARDUINO_LIBS}" FILTERED_LIBRARIES)
+    
+    arduino_debug_msg("Arduino libraries without blacklisted: ${FILTERED_LIBRARIES}")
+    
     set(${VAR_NAME} "${FILTERED_LIBRARIES}" PARENT_SCOPE)
 
 endfunction()
