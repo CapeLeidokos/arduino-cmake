@@ -44,7 +44,7 @@ function(create_arduino_firmware_target TARGET_NAME BOARD_ID ALL_SRCS ALL_LIBS
             if(NOT "${linker_flags}" STREQUAL "")
                set(linker_flags "${linker_flags} ")
             endif()
-            set(linker_flags "${linker_flags}-Wl,-force_load ${lib}")
+            set(linker_flags "${linker_flags}-Wl,-force_load ${lib}.a")
          endforeach()
 #          message("linker_flags: ${linker_flags}")
          target_link_libraries(${TARGET_NAME} PUBLIC ${linker_flags})
